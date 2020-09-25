@@ -1,0 +1,30 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<mule xmlns:ee="http://www.mulesoft.org/schema/mule/ee/core" xmlns:http="http://www.mulesoft.org/schema/mule/http"
+	xmlns="http://www.mulesoft.org/schema/mule/core"
+	xmlns:doc="http://www.mulesoft.org/schema/mule/documentation" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://www.mulesoft.org/schema/mule/core http://www.mulesoft.org/schema/mule/core/current/mule.xsd
+http://www.mulesoft.org/schema/mule/http http://www.mulesoft.org/schema/mule/http/current/mule-http.xsd
+http://www.mulesoft.org/schema/mule/ee/core http://www.mulesoft.org/schema/mule/ee/core/current/mule-ee.xsd">
+	<http:request-config name="HTTP_Request_configuration" doc:name="HTTP Request configuration" doc:id="50441b6d-046e-49c6-98fd-3efc71cd7c9b" basePath="/api/timezone" >
+		<http:request-connection host="worldtimeapi.org"/>
+	</http:request-config>
+	<flow name="test-second-flowFlow" doc:id="4e203504-5e40-45f3-9583-c29fd7d90473" >
+		<http:listener doc:name="Listener" doc:id="c5626ce8-56ad-40ce-a49d-d8395734f6cb" config-ref="HTTP_Listener_config" path="/{area}/{location}"/>
+		<http:request method="GET" doc:name="Request" doc:id="578e464b-b26d-4a18-af3c-c5b8d01c4b34" config-ref="HTTP_Request_configuration" path="/{area}/{location}">
+			<http:uri-params ><![CDATA[#[output application/java
+---
+{
+	area : attributes.uriParams.area,
+	location : attributes.uriParams.location
+}]]]></http:uri-params>
+		</http:request>
+		<ee:transform doc:name="Transform Message" doc:id="88929499-ec28-4ca7-90f6-e676011d1466" >
+			<ee:message >
+				<ee:set-payload ><![CDATA[%dw 2.0
+output application/json
+---
+sourceTimestamp: (payload.unixtime as DateTime) as String ]]></ee:set-payload>
+			</ee:message>
+		</ee:transform>
+	</flow>
+</mule>
